@@ -502,7 +502,7 @@ impl PdaRunner {
         job: &Job,
         job_key: &[u8],
     ) -> Result<util::SuccNetJobId, PdaRunnerError> {
-        debug!("Preparing local SP1 proving");
+        debug!("Preparing *REMOTE* SP1 proving");
         let zk_client_handle = self.get_zk_client_remote().await;
         let proof_setup = self
             .get_proof_setup_remote(program_id, zk_client_handle.clone())
