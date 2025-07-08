@@ -3,6 +3,7 @@ default:
 
 alias r := run-debug
 alias rr := run-release
+alias rrr := run-release-reproducible
 alias bc := bench-cycles
 alias db := docker-build
 alias ds := docker-save
@@ -10,6 +11,7 @@ alias dl := docker-load
 alias dr := docker-run
 alias b := build-debug
 alias br := build-release
+alias brr := build-release-reproducible
 alias f := fmt
 alias c := clean
 
@@ -30,7 +32,9 @@ initial-config-installs:
     @just sp1 initial-config-installs
 
 _pre-build:
-    # ALWAYS build with docker
+    @just sp1 build-elf
+
+_pre-build-reproducible:
     @just sp1 build-elf-reproducible
 
 _pre-run:
@@ -39,6 +43,10 @@ _pre-run:
 # Check cycle counts for zkVM on ./zkVM/static example inputs
 bench-cycles *FLAGS: _pre-build _pre-run
     cargo r -r -p sp1-util --bin cli -- --execute
+
+# Run in release mode, zkVM ELF stable with optimizations AND debug logs
+run-release-reproducible *FLAGS: _pre-build-reproducible _pre-run
+    RUST_LOG=pda_proxy=debug cargo r -r --features reproducible-elf -- {{ FLAGS }}
 
 # Run in release mode, with optimizations AND debug logs
 run-release *FLAGS: _pre-build _pre-run
@@ -91,6 +99,10 @@ build-debug: _pre-build
 # Build in release mode, includes optimizations
 build-release: _pre-build
     cargo b -r
+
+# Build in release mode, enforce ELF build is reproducible includes optimizations
+build-release-reproducible: _pre-build-reproducible
+    cargo b -r --features reproducible-elf
 
 # Scrub build artifacts
 clean:

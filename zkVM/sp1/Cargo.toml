@@ -33,6 +33,6 @@ codegen-units = 1
 debug = 1
 
 [features]
-default = ["reproducible-elf"]
+default = []
 
 reproducible-elf = []

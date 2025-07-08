@@ -49,11 +49,11 @@ RUN --mount=type=cache,id=target_cache,target=/app/target \
 COPY . .
 
 # Build SP1 ELF to be proven (with optimizations)
+# WARNING: we do NOT assume `cargo prove build --docker` is required for identical ELF
 RUN --mount=type=cache,id=target_cache,target=/app/target \
     RUSTFLAGS="-Copt-level=3 -Clto=fat -Ccodegen-units=1 -Cdebuginfo=1 -Cembed-bitcode=yes"\
-    /root/.sp1/bin/cargo-prove prove build --docker -p chacha-program
-# Build the final binary
-# NOTE: default feature is to use --docker ELF
+    /root/.sp1/bin/cargo-prove prove build -p chacha-program
+# Build the final binary, embbeding ELF
 RUN --mount=type=cache,id=target_cache,target=/app/target \
     cargo build --release && \
     strip /app/target/release/pda-proxy && \
