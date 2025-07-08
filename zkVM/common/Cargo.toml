@@ -11,6 +11,5 @@ rand = { workspace = true, default-features = false, optional = true, features =
 sha2 = { workspace = true, optional = true }
 
 [features]
-default = ["std", "reproducible-elf"]
+default = ["std"]
 std = ["rand/os_rng", "sha2"]
-reproducible-elf = []

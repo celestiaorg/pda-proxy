@@ -30,6 +30,6 @@ rustls-pemfile.workspace = true
 hyper-rustls.workspace = true
 
 [features]
-default = ["reproducible-elf"]
+default = []
 
 reproducible-elf = []
