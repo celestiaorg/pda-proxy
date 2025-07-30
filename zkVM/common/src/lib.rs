@@ -101,7 +101,7 @@ pub mod std_only {
 
     /// Helper to format bytes as hex for pretty printing
     pub fn bytes_to_hex(bytes: &[u8]) -> String {
-        let digest_hex: String = bytes.iter().map(|b| format!("{:02x}", b)).collect();
+        let digest_hex: String = bytes.iter().map(|b| format!("{b:02x}")).collect();
         digest_hex
     }
 }

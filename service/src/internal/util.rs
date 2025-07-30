@@ -93,7 +93,7 @@ use rustls::pki_types::{CertificateDer, PrivateKeyDer};
 pub fn load_certs(filename: &str) -> io::Result<Vec<CertificateDer<'static>>> {
     // Open certificate file.
     let cert_file = fs::File::open(filename)
-        .map_err(|e| map_io_error(format!("failed to open {}: {}", filename, e)))?;
+        .map_err(|e| map_io_error(format!("failed to open {filename}: {e}")))?;
     let mut reader = io::BufReader::new(cert_file);
 
     // Load and return certificate.
@@ -104,7 +104,7 @@ pub fn load_certs(filename: &str) -> io::Result<Vec<CertificateDer<'static>>> {
 pub fn load_private_key(filename: &str) -> io::Result<PrivateKeyDer<'static>> {
     // Open keyfile.
     let keyfile = fs::File::open(filename)
-        .map_err(|e| map_io_error(format!("failed to open {}: {}", filename, e)))?;
+        .map_err(|e| map_io_error(format!("failed to open {filename}: {e}")))?;
     let mut reader = io::BufReader::new(keyfile);
 
     // Load and return a single private key.

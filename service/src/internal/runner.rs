@@ -44,6 +44,8 @@ static CHACHA_SETUP: OnceCell<Arc<SP1ProofSetup>> = OnceCell::const_new();
 pub struct PdaRunnerConfig {
     /// Timeout in seconds for prover network proof requests
     pub zk_proof_gen_timeout_remote: Duration,
+    /// Timeout for in seconds for prover network proof auction to close
+    pub zk_proof_auction_timeout_remote: Duration,
 }
 
 /// The main service runner.
@@ -173,7 +175,7 @@ impl PdaRunner {
             "network" => JobStatus::RemoteZkProofRequesting,
             "cuda" | "cpu" | "mock" => JobStatus::LocalZkProofPending,
             unknown_str => {
-                let e = format!("SP1_PROVER is unkown: {}", unknown_str);
+                let e = format!("SP1_PROVER is unkown: {unknown_str}");
                 error!("{e}");
                 return Err(PdaRunnerError::InternalError(e));
             }
@@ -421,7 +423,8 @@ impl PdaRunner {
                 ));
                 job_status = JobStatus::Failed(e.clone(), None);
             }
-            SP1NetworkError::RequestTimedOut { .. } => {
+            SP1NetworkError::RequestTimedOut { .. }
+            | SP1NetworkError::RequestAuctionTimedOut { .. } => {
                 e = PdaRunnerError::ZkClientError(format!(
                     "ZKP network: {zk_client_error} occurred for {job:?} - callback to start the job over"
                 ));
@@ -541,6 +544,7 @@ impl PdaRunner {
             .groth16()
             .skip_simulation(false)
             .timeout(self.config.zk_proof_gen_timeout_remote) // Time allowed for provers to *attempt* a job, or it permanently fails.
+            .auction_timeout(self.config.zk_proof_auction_timeout_remote)
             .request_async()
             .await
             // TODO: how to handle errors without a concrete type? Anyhow is not the right thing for us...
@@ -567,14 +571,21 @@ impl PdaRunner {
         request_id: util::SuccNetJobId,
     ) -> Result<SP1ProofWithPublicValues, PdaRunnerError> {
         debug!(
-            "Waiting for proof from prover network with timeout: {} seconds",
+            "Waiting for prover network auction to settle with timeout: {} seconds",
+            self.config.zk_proof_auction_timeout_remote.as_secs()
+        );
+        debug!(
+            "Waiting for proof generation with timeout: {} seconds",
             self.config.zk_proof_gen_timeout_remote.as_secs()
         );
-        debug!("Waiting for proof from prover network");
         let zk_client_handle = self.get_zk_client_remote().await;
 
         let proof = zk_client_handle
-            .wait_proof(request_id.into(), None)
+            .wait_proof(
+                request_id.into(),
+                Some(self.config.zk_proof_gen_timeout_remote),
+                Some(self.config.zk_proof_auction_timeout_remote),
+            )
             .await
             .map_err(|e| {
                 if let Some(down) = e.downcast_ref::<SP1NetworkError>() {

@@ -77,6 +77,6 @@ impl std::fmt::Debug for JobStatus {
 }
 
 fn bytes_to_hex(bytes: &[u8]) -> String {
-    let digest_hex: String = bytes.iter().map(|b| format!("{:02x}", b)).collect();
+    let digest_hex: String = bytes.iter().map(|b| format!("{b:02x}")).collect();
     digest_hex
 }
