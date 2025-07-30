@@ -22,10 +22,10 @@ pub enum PdaRunnerError {
 impl fmt::Debug for PdaRunnerError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            PdaRunnerError::InternalError(s) => write!(f, "InternalError({})", s),
-            PdaRunnerError::ZkClientError(s) => write!(f, "ZkClientError({})", s),
-            PdaRunnerError::DaClientError(s) => write!(f, "DaClientError({})", s),
-            PdaRunnerError::InvalidParameter(s) => write!(f, "InvalidParameter({})", s),
+            PdaRunnerError::InternalError(s) => write!(f, "InternalError({s})"),
+            PdaRunnerError::ZkClientError(s) => write!(f, "ZkClientError({s})"),
+            PdaRunnerError::DaClientError(s) => write!(f, "DaClientError({s})"),
+            PdaRunnerError::InvalidParameter(s) => write!(f, "InvalidParameter({s})"),
         }
     }
 }

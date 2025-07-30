@@ -78,17 +78,14 @@ async fn main() -> Result<()> {
     server_config.alpn_protocols = vec![b"http/1.1".to_vec(), b"http/1.0".to_vec()];
     let tls_acceptor = TlsAcceptor::from(Arc::new(server_config));
 
-    info!("Listening on https://{}", service_socket);
+    info!("Listening on https://{service_socket}");
     let https_builder = HttpsConnectorBuilder::new().with_native_roots()?;
 
     let https_or_http_connector = if std::env::var("UNSAFE_HTTP_UPSTREAM").is_ok() {
         warn!("UNSAFE_HTTP_UPSTREAM — allowing HTTP for upstream Celestia connection!");
         https_builder.https_or_http().enable_http1().build()
     } else {
-        info!(
-            "Proxying to Celestia securely on https://{}",
-            da_node_socket
-        );
+        info!("Proxying to Celestia securely on https://{da_node_socket}",);
         https_builder.https_only().enable_http1().build()
     };
     let celestia_client: Client<_, BoxBody> =
@@ -96,6 +93,17 @@ async fn main() -> Result<()> {
 
     info!("Building clients and service setup");
     let (job_sender, job_receiver) = mpsc::unbounded_channel::<Option<Job>>();
+
+    let zk_proof_auction_timeout_remote = Duration::from_secs(
+        std::env::var("PROOF_AUCTION_TIMEOUT_SECONDS_REMOTE")
+            .expect("PROOF_AUCTION_TIMEOUT_SECONDS_REMOTE env var required")
+            .parse()
+            .expect("PROOF_AUCTION_TIMEOUT_SECONDS_REMOTE must be integer"),
+    );
+    info!(
+        "Prover network auction timeout configured to {} seconds (permanent failure, and new request needed if hit)",
+        zk_proof_auction_timeout_remote.as_secs()
+    );
 
     let zk_proof_gen_timeout_remote = Duration::from_secs(
         std::env::var("PROOF_GEN_TIMEOUT_SECONDS_REMOTE")
@@ -111,6 +119,7 @@ async fn main() -> Result<()> {
     let pda_runner = Arc::new(PdaRunner::new(
         PdaRunnerConfig {
             zk_proof_gen_timeout_remote,
+            zk_proof_auction_timeout_remote,
         },
         OnceCell::new(),
         OnceCell::new(),
@@ -162,7 +171,7 @@ async fn main() -> Result<()> {
                 JobStatus::LocalZkProofPending | JobStatus::RemoteZkProofPending(_) => {
                     let _ = job_sender
                         .send(Some(job))
-                        .map_err(|e| error!("Failed to send existing job to worker: {}", e));
+                        .map_err(|e| error!("Failed to send existing job to worker: {e}"));
                 }
                 _ => {
                     error!("Unexpected job in queue! DB is in invalid state!")
@@ -243,12 +252,11 @@ async fn main() -> Result<()> {
                                         .await
                                         .unwrap_or_else(|e| {
                                             internal_error_response(format!(
-                                                "Outbound Handler: {}",
-                                                e
+                                                "Outbound Handler: {e}"
                                             ))
                                         }),
                                         Err(e) => {
-                                            internal_error_response(format!("DA Client: {}", e))
+                                            internal_error_response(format!("DA Client: {e}"))
                                         }
                                     };
                                     debug!("Responding (maybe modified)  <-- DA",);
@@ -264,10 +272,10 @@ async fn main() -> Result<()> {
                     });
 
                     if let Err(err) = http1::Builder::new().serve_connection(io, service).await {
-                        error!("Failed to serve the connection: {:?}", err);
+                        error!("Failed to serve the connection: {err:?}");
                     }
                 }
-                Err(e) => error!("TLS handshake failed: {:?}", e),
+                Err(e) => error!("TLS handshake failed: {e:?}"),
             }
         });
     }
@@ -438,7 +446,7 @@ async fn outbound_handler(
     .await;
 
     if let Err(err) = try_mutate_response {
-        warn!("Failed to decrypt response: {:?}", err);
+        warn!("Failed to decrypt response: {err:?}");
         let orig_body = Full::new(body_bytes)
             .map_err(|err: std::convert::Infallible| match err {})
             .boxed();

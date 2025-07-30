@@ -6,7 +6,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive \
   clang libclang-dev docker.io curl tar build-essential pkg-config git ca-certificates gnupg2 \
   && rm -rf /var/lib/apt/lists/*
  
-ENV GO_VERSION=1.24.4
+ENV GO_VERSION=1.24.5
 ENV GO_URL="https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
 RUN curl -L --proto '=https' --tlsv1.2 -sSf ${GO_URL} -o go.tar.gz && \
     mkdir -p /opt/go && \

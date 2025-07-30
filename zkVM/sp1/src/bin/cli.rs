@@ -54,10 +54,7 @@ fn main() {
         std::env::var("ENCRYPTION_KEY").expect("Missing ENCRYPTION_KEY env var"),
     )
     .unwrap_or_else(|_| {
-        panic!(
-            "ENCRYPTION_KEY must be {} bytes, hex encoded (ex: `1234...abcd`)",
-            KEY_LEN
-        )
+        panic!("ENCRYPTION_KEY must be {KEY_LEN} bytes, hex encoded (ex: `1234...abcd`)")
     });
     stdin.write_slice(&input_key);
 
