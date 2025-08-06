@@ -175,7 +175,7 @@ impl PdaRunner {
             "network" => JobStatus::RemoteZkProofRequesting,
             "cuda" | "cpu" | "mock" => JobStatus::LocalZkProofPending,
             unknown_str => {
-                let e = format!("SP1_PROVER is unkown: {unknown_str}");
+                let e = format!("SP1_PROVER is unknown: {unknown_str}");
                 error!("{e}");
                 return Err(PdaRunnerError::InternalError(e));
             }
