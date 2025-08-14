@@ -125,7 +125,7 @@ doc:
 mocha:
     # Assumes you already did init for this & configured
     # If not, see https://docs.celestia.org/tutorials/node-tutorial#setting-up-dependencies
-    celestia light start --core.ip rpc-mocha.pops.one --p2p.network mocha
+    celestia light start --core.ip rpc-mocha.pops.one --p2p.network mocha --rpc.skip-auth
 
 # Setup and print to stdout, needs to be set in env to be picked up
 

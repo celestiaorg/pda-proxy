@@ -42,7 +42,9 @@ static CHACHA_SETUP: OnceCell<Arc<SP1ProofSetup>> = OnceCell::const_new();
 
 /// Configuration for the PDA Runner
 pub struct PdaRunnerConfig {
-    /// Timeout in seconds for prover network proof requests
+    /// Timeout in seconds for onchain auction to win a prover to process
+    pub zk_proof_auction_timeout_remote: Duration,
+    /// Timeout in seconds for prover network proof generation
     pub zk_proof_gen_timeout_remote: Duration,
     /// Timeout for in seconds for prover network proof auction to close
     pub zk_proof_auction_timeout_remote: Duration,
