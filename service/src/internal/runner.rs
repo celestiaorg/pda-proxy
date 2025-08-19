@@ -42,10 +42,10 @@ static CHACHA_SETUP: OnceCell<Arc<SP1ProofSetup>> = OnceCell::const_new();
 
 /// Configuration for the PDA Runner
 pub struct PdaRunnerConfig {
-    /// Timeout in seconds for prover network proof requests
-    pub zk_proof_gen_timeout_remote: Duration,
-    /// Timeout for in seconds for prover network proof auction to close
+    /// Timeout in seconds for onchain auction to win a prover to process
     pub zk_proof_auction_timeout_remote: Duration,
+    /// Timeout in seconds for prover network proof generation
+    pub zk_proof_gen_timeout_remote: Duration,
 }
 
 /// The main service runner.
@@ -175,7 +175,7 @@ impl PdaRunner {
             "network" => JobStatus::RemoteZkProofRequesting,
             "cuda" | "cpu" | "mock" => JobStatus::LocalZkProofPending,
             unknown_str => {
-                let e = format!("SP1_PROVER is unkown: {unknown_str}");
+                let e = format!("SP1_PROVER is unknown: {unknown_str}");
                 error!("{e}");
                 return Err(PdaRunnerError::InternalError(e));
             }

@@ -14,6 +14,7 @@ alias br := build-release
 alias brr := build-release-reproducible
 alias f := fmt
 alias c := clean
+alias cb := curl-blob-submit-with-max-gas
 
 # Bash, fail with undefined vars
 
@@ -125,7 +126,7 @@ doc:
 mocha:
     # Assumes you already did init for this & configured
     # If not, see https://docs.celestia.org/tutorials/node-tutorial#setting-up-dependencies
-    celestia light start --core.ip rpc-mocha.pops.one --p2p.network mocha
+    celestia light start --core.ip rpc-mocha.pops.one --p2p.network mocha --rpc.skip-auth
 
 # Setup and print to stdout, needs to be set in env to be picked up
 
@@ -174,9 +175,10 @@ curl-blob-get-passthrough:
 
 # https://mocha.celenium.io/tx/436f223bfa8c4adf1e1b79dde43a84918f3a50809583c57c33c1c079568b47cb?tab=messages
 
-# Test blob.Submit for PDA proxy
-curl-blob-submit:
-    curl -H "Content-Type: application/json" -H "Authorization: Bearer $CELESTIA_NODE_WRITE_TOKEN" \
-         --data '{ "id": 1, "jsonrpc": "2.0", "method": "blob.Submit", "params": [ [ { "namespace": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAMJ/xGlNMdE=", "data": "DEADB33F", "share_version": 0, "commitment": "aHlbp+J9yub6hw/uhK6dP8hBLR2mFy78XNRRdLf2794=", "index": -1 } ], { } ] }' \
+# Test blob.Submit for PDA proxy, max gas price is minimum 0.0004utia
+curl-blob-submit-with-max-gas:
+    curl -H "Content-Type: application/json" \
+         -H "Authorization: Bearer $CELESTIA_NODE_WRITE_TOKEN" \
+         --data '{"id":1,"jsonrpc":"2.0","method":"blob.Submit","params":[[{"namespace":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAMJ/xGlNMdE=","data":"DEADB33F","share_version":0,"commitment":"aHlbp+J9yub6hw/uhK6dP8hBLR2mFy78XNRRdLf2794=","index":-1}],{"max_gas_price":0.010}]}' \
          https://127.0.0.1:26657 \
          --insecure | jq
